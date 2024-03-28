@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+
+<head>
+  <title>Housing Market Across the U.S.</title>
+  <meta charset="utf-8">
+  <style>
+  </style>
+  <script type="text/javascript" src="lib/d3.v5.min.js"></script>
+
+</head>
+
+<body>
+  <script>
+    d3.dsv(",", "test_data.csv", function(d) {
+      return {};
+    }).then(function(data) {
+
+    }).catch(function (error) {
+      console.log(error);
+    });
+  </script>
+</body>
