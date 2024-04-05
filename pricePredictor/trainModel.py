@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
 from dataset import PricePredictorDataset
+from predictorModel import PricePredictor
 
 
 def createDataloader(train_percentage=0.95):
@@ -16,11 +17,19 @@ def createDataloader(train_percentage=0.95):
     return train_data_loader, eval_data_loader
 
 
+def trainTest(model, criterion, optimizer, train_loader, test_loader):
+    for train_batch in train_loader:
+        data = train_batch[0][0]
+        targets = train_batch[1][0]
+
+
 if __name__ == "__main__":
     train_data_loader, eval_data_loader = createDataloader()
-    for batch in eval_data_loader:
-        data, target = batch
-        print("Data")
-        print(data)
-        print("Target")
-        print(target)
+
+    model = PricePredictor()
+    criterion = torch.nn.MSELoss()
+    optimizer = torch.optim.Adam(model.parameters())
+    epochs = 20
+    for epoch in range(epochs):
+        trainTest(model, criterion, optimizer,
+                  train_data_loader, eval_data_loader)
