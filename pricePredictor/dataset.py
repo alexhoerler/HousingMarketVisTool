@@ -2,6 +2,7 @@ import csv
 from datetime import datetime
 import torch
 from torch.utils.data import Dataset
+from predictorModel import PricePredictor
 
 
 class PricePredictorDataset(Dataset):
@@ -67,6 +68,7 @@ class PricePredictorDataset(Dataset):
 
         self.data = []
         self.targets = []
+        self.states = []
 
         years = range(2012, 2022)
         for state in self.data_points:
@@ -122,9 +124,58 @@ class PricePredictorDataset(Dataset):
 
             self.data.append(state_data_tensor)
             self.targets.append(state_target_tensor)
+            self.states.append(state)
 
     def __len__(self):
+        assert len(self.data) == len(self.targets) and len(
+            self.data) == len(self.states)
         return len(self.targets)
 
     def __getitem__(self, index):
         return self.data[index], self.targets[index]
+
+    def state_ppsf_stats(self, model_path):
+
+        model = PricePredictor()
+        model.load_state_dict(torch.load(model_path))
+
+        with open("../data/state_avg_ppsf.csv", "w") as ppsf_file:
+            csv_writer = csv.writer(ppsf_file)
+            csv_writer.writerow(["state", "2012", "2013", "2014", "2015", "2016",
+                                "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024"])
+            predicted_num = 3
+
+            for idx in range(self.__len__()):
+                state = self.states[idx]
+                csv_row = [state]
+                data, targets = self.__getitem__(idx)
+
+                inputs = data[:, 0:1]
+                added_features = data[:, 1:]
+                hidden_state = torch.tensor([[0.0] * model.d_model])
+                prediction = None
+                for row in range(inputs.shape[0]):
+                    csv_row.append(inputs[row, :][0].item())
+
+                    current_input = inputs[row, :].unsqueeze(0)
+                    start_idx = max(row - 4, 0)
+                    end_idx = min(row + 1, added_features.shape[0])
+                    current_features = torch.mean(
+                        added_features[start_idx: end_idx, :], dim=0, keepdim=True)
+                    prediction, hidden_state = model(
+                        current_input, hidden_state, current_features)
+
+                csv_row.append(float(int(prediction[0].item())))
+                for row in range(predicted_num - 1):
+                    current_input = prediction.unsqueeze(0)
+                    start_idx = max(inputs.shape[0] + row - 4, 0)
+                    end_idx = min(inputs.shape[0] +
+                                  row + 1, added_features.shape[0])
+                    current_features = torch.mean(
+                        added_features[start_idx: end_idx, :], dim=0, keepdim=True)
+
+                    prediction, hidden_state = model(
+                        current_input, hidden_state, current_features)
+                    csv_row.append(float(int(prediction[0].item())))
+
+                csv_writer.writerow(csv_row)

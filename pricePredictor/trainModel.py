@@ -30,14 +30,17 @@ def trainTest(model, criterion, optimizer, train_loader, test_loader):
         for iteration in range(inputs.shape[0] - 1):
             iteration_input = inputs[:iteration + 1, :]
             iteration_features = added_features[:iteration + 1, :]
-            iteration_target = targets[iteration].unsqueeze(0)
+            iteration_target = targets[iteration].unsqueeze(0) + 1000
 
             optimizer.zero_grad()
             hidden_state = torch.tensor([[0.0] * model.d_model])
             prediction = None
             for row in range(iteration_input.shape[0]):
                 current_input = iteration_input[row, :].unsqueeze(0)
-                current_features = iteration_features[row, :].unsqueeze(0)
+                start_idx = max(row - 4, 0)
+                end_idx = min(row + 1, iteration_features.shape[0])
+                current_features = torch.mean(
+                    iteration_features[start_idx: end_idx, :], dim=0, keepdim=True)
                 prediction, hidden_state = model(
                     current_input, hidden_state, current_features)
             loss = criterion(prediction, iteration_target)
@@ -60,8 +63,11 @@ def trainTest(model, criterion, optimizer, train_loader, test_loader):
         hidden_state = torch.tensor([[0.0] * model.d_model])
         prediction = None
         for row in range(inputs.shape[0] - 1):
-            current_input = iteration_input[row, :].unsqueeze(0)
-            current_features = iteration_features[row, :].unsqueeze(0)
+            current_input = inputs[row, :].unsqueeze(0)
+            start_idx = max(row - 4, 0)
+            end_idx = min(row + 1, iteration_features.shape[0])
+            current_features = torch.mean(
+                added_features[start_idx: end_idx, :], dim=0, keepdim=True)
             prediction, hidden_state = model(
                 current_input, hidden_state, current_features)
         print(
@@ -76,21 +82,24 @@ def trainTest(model, criterion, optimizer, train_loader, test_loader):
 
 
 if __name__ == "__main__":
-    train_data_loader, eval_data_loader = createDataloader()
+    # train_data_loader, eval_data_loader = createDataloader()
 
-    model = PricePredictor()
-    if os.path.exists("predictor.pth"):
-        print("Loading model from file")
-        model.load_state_dict(torch.load("predictor.pth"))
+    # model = PricePredictor()
+    # if os.path.exists("predictor_original.pth"):
+    #     print("Loading model from file")
+    #     model.load_state_dict(torch.load("predictor_original.pth"))
 
-    criterion = torch.nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
-    epochs = 5000
-    for epoch in range(epochs):
-        print("Epoch: ", epoch)
-        avg_train_loss, avg_test_loss = trainTest(model, criterion, optimizer,
-                                                  train_data_loader, eval_data_loader)
-        if avg_train_loss < 6500000 and avg_test_loss < 1000000:
-            print("Local minima found; Breaking")
-            break
-    torch.save(model.state_dict(), "predictor.pth")
+    # criterion = torch.nn.MSELoss()
+    # optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
+    # epochs = 5000
+    # for epoch in range(epochs):
+    #     print("Epoch: ", epoch)
+    #     avg_train_loss, avg_test_loss = trainTest(model, criterion, optimizer,
+    #                                               train_data_loader, eval_data_loader)
+    #     if avg_train_loss < 5500000 and avg_test_loss < 3000000:
+    #         print("Local minima found; Breaking")
+    #         break
+    # torch.save(model.state_dict(), "predictor_avg.pth")
+
+    house_dataset = PricePredictorDataset("../data/data.csv")
+    house_dataset.state_ppsf_stats("predictor_avg.pth")
