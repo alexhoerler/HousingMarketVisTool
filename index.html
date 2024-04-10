@@ -266,10 +266,15 @@
                 console.log(avg_ppsf2);
 
                 let container = d3.select("#graphContainer");
-
                 let table = container.append("table")
                     .attr("id", "tableContainer");
-                let thead = table.append("thead").append("tr");
+
+                let thead = table.append("thead");
+                let titleRow = thead.append("tr");
+                titleRow.append("th")
+                    .attr("colspan", "3")
+                    .text("Top 10 States by AVG House PPSF");
+                let headerRow = thead.append("tr");
                 thead.append("th").text("Rank");
                 thead.append("th").text("State");
                 thead.append("th").text("Avg House PPSF");
