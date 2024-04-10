@@ -250,16 +250,19 @@
             /* Create top 10 highest ppsf table */
             function createPpsfTable() {
                 let avg_ppsf = {};
+                let avg_ppsf2 = {};
                 state_ppsf.forEach(function (state_data) {
                     let sum = 0;
                     let count = 0;
                     for (let year in state_data) {
                         if (year !== 'state') {
-                            sum += state_data[year];
+                            sum += parseFloat(state_data[year]);
                             count++;
                         }
                     }
                     avg_ppsf[state_data.state] = sum/count;
+                    console.log(sum/count);
+                    avg_ppsf2[state_data.state] = sum/count;
                 });
 
                 // sort states
@@ -267,7 +270,9 @@
                     return avg_ppsf[b] - avg_ppsf[a];
                 });
 
-                console.log(sortedStates);
+
+
+                console.log(avg_ppsf2);
 
                 let container = d3.select("#tableContainer");
 
@@ -283,7 +288,7 @@
                     let row = tbody.append("tr");
                     row.append("td").text(index + 1); // rank
                     row.append("td").text(state);
-                    row.append("td").text(avg_ppsf[state].toFixed(2)); //ppsf
+                    row.append("td").text(avg_ppsf2[state].toFixed(2)); //ppsf
                 });
 
             }
