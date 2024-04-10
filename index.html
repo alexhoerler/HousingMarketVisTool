@@ -61,6 +61,18 @@
             stroke-width: 2;
             stroke-dasharray: 3, 3;
         }
+
+        #graphContainer {
+            flex: 1;
+        }
+
+        #tableContainer {
+        background-color: white;
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-left: 20px;
+        }
+        
     </style>
 </head>
 
@@ -71,6 +83,8 @@
     <div class="mapContainer" id="mapContainer">
     </div>
     <div class="graphContainer" id="graphContainer">
+    </div>
+    <div class="tableContainer" id="tableContainer">
     </div>
 
     <script>
@@ -115,6 +129,7 @@
                 .attr("class", "mapPath");
 
             createPpsfLine("North Carolina");
+            createPpsfTable();
 
             /* Create ppsf Line */
             function createPpsfLine(state) {
@@ -229,6 +244,48 @@
                     .style("fill", "black")
                     .style("font-size", 14)
                     .text("Avg. Price/Square Foot (k)");
+            }
+
+
+            /* Create top 10 highest ppsf table */
+            function createPpsfTable() {
+                let avg_ppsf = {};
+                state_ppsf.forEach(function (state_data) {
+                    let sum = 0;
+                    let count = 0;
+                    for (let year in state_data) {
+                        if (year !== 'state') {
+                            sum += state_data[year];
+                            count++;
+                        }
+                    }
+                    avg_ppsf[state_data.state] = sum/count;
+                });
+
+                // sort states
+                let sortedStates = Object.keys(avg_ppsf).sort(function (a, b) {
+                    return avg_ppsf[b] - avg_ppsf[a];
+                });
+
+                console.log(sortedStates);
+
+                let container = d3.select("#tableContainer");
+
+                let table = container.append("table");
+                let thead = table.append("thead").append("tr");
+                thead.append("th").text("Rank");
+                thead.append("th").text("State");
+                thead.append("th").text("Avg House PPSF");
+                let tbody = table.append("tbody");
+
+                // Populate the table with data
+                sortedStates.slice(0, 10).forEach(function (state, index) {
+                    let row = tbody.append("tr");
+                    row.append("td").text(index + 1); // rank
+                    row.append("td").text(state);
+                    row.append("td").text(avg_ppsf[state].toFixed(2)); //ppsf
+                });
+
             }
 
         }).catch(function (error) {
