@@ -41,7 +41,7 @@
             stroke-width: 1px;
         }
 
-        .container {
+        .graphContainer {
             display: flex;
             flex-direction: row;
         }
@@ -62,14 +62,9 @@
             stroke-dasharray: 3, 3;
         }
 
-        #graphContainer {
-            flex: 1;
-        }
-
         #tableContainer {
         background-color: white;
         border: 1px solid #ccc;
-        padding: 10px;
         margin-left: 20px;
         }
         
@@ -83,8 +78,6 @@
     <div class="mapContainer" id="mapContainer">
     </div>
     <div class="graphContainer" id="graphContainer">
-    </div>
-    <div class="tableContainer" id="tableContainer">
     </div>
 
     <script>
@@ -270,20 +263,18 @@
                     return avg_ppsf[b] - avg_ppsf[a];
                 });
 
-
-
                 console.log(avg_ppsf2);
 
-                let container = d3.select("#tableContainer");
+                let container = d3.select("#graphContainer");
 
-                let table = container.append("table");
+                let table = container.append("table")
+                    .attr("id", "tableContainer");
                 let thead = table.append("thead").append("tr");
                 thead.append("th").text("Rank");
                 thead.append("th").text("State");
                 thead.append("th").text("Avg House PPSF");
                 let tbody = table.append("tbody");
 
-                // Populate the table with data
                 sortedStates.slice(0, 10).forEach(function (state, index) {
                     let row = tbody.append("tr");
                     row.append("td").text(index + 1); // rank
