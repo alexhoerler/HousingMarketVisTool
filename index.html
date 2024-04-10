@@ -248,7 +248,7 @@
                     let sum = 0;
                     let count = 0;
                     for (let year in state_data) {
-                        if (year !== 'state') {
+                        if (year !== 'state' && year !== '2022' && year !== '2023' && year !== '2024') {
                             sum += parseFloat(state_data[year]);
                             count++;
                         }
