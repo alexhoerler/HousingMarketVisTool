@@ -9,7 +9,7 @@
     <script src="lib/topojson.v2.min.js"></script>
     <style>
         body {
-            background-color: #d3d3d3;
+            background-color: #f0f0f0;
             margin: 0;
             padding: 0;
         }
@@ -41,7 +41,7 @@
             stroke-width: 1px;
         }
 
-        .container {
+        .graphContainer {
             display: flex;
             flex-direction: row;
         }
@@ -52,14 +52,24 @@
             padding: 0;
         }
 
-        .solidUnder {
-            text-decoration: underline;
+        .tick-line {
+            stroke: lightgrey;
+            stroke-dasharray: 3, 3;
         }
 
-        .underline {
-            stroke: black;
-            stroke-width: 2;
-            stroke-dasharray: 3, 3;
+        div.tooltip {
+            position: absolute;
+            z-index: 9999;
+            text-align: center;
+            width: 140px;
+            height: 40px;
+            padding: 5px;
+            font: 5;
+            background-color: Lightgrey;
+            border: 0px;
+            border-radius: 5px;
+            pointer-events: none;
+            opacity: 0;
         }
     </style>
 </head>
@@ -112,9 +122,19 @@
                 .data(topojson.feature(usStates, usStates.objects.states).features)
                 .enter().append("path")
                 .attr("d", path)
-                .attr("class", "mapPath");
+                .attr("class", "mapPath")
+                .on("click", function (d) {
+                    deleteGraphs(d.properties.name);
+                    setHeader(d.properties.name);
+                    createPpsfLine(d.properties.name);
+                });
 
-            createPpsfLine("North Carolina");
+            /* Sets the Header Value */
+            function setHeader(state) {
+                const header = document.getElementById("header");
+                const h1Element = header.querySelector("h1");
+                h1Element.innerText = state;
+            }
 
             /* Create ppsf Line */
             function createPpsfLine(state) {
@@ -127,7 +147,7 @@
                                 const datapoint = { x: parseInt(key), y: +value };
                                 data.push(datapoint);
                             }
-                            if (key != "state" && key > 2020) {
+                            if (key != "state" && key >= 2021) {
                                 const datapoint = { x: parseInt(key), y: +value };
                                 predicted.push(datapoint);
                             }
@@ -137,7 +157,7 @@
 
                 let ppsf_svg = d3.select("#graphContainer")
                     .append("svg")
-                    .attr("id", "ppsf_map")
+                    .attr("id", "ppsf_graph_svg")
                     .attr("width", map_width)
                     .attr("height", map_height);
 
@@ -146,11 +166,11 @@
 
                 const xScale = d3.scaleLinear()
                     .domain(d3.extent(data, d => d.x))
-                    .range([margin.left, map_width - margin.right]);
+                    .range([margin.left * 2, map_width - 2 * margin.right]);
 
                 const yScale = d3.scaleLinear()
                     .domain([0, d3.max(data, d => d.y)])
-                    .range([map_height, margin.bottom * 2]);
+                    .range([map_height - 1.5 * margin.bottom, margin.top * 2.5]);
 
                 const line = d3.line()
                     .x(d => xScale(d.x))
@@ -159,13 +179,20 @@
 
                 data = data.slice(0, -3);
 
-                ppsf_graph.append("path")
-                    .datum(data)
-                    .attr("fill", "none")
-                    .attr("stroke", "black")
-                    .attr("stroke-width", 2)
-                    .attr("class", "lineExist")
-                    .attr("d", line);
+                var x_axis = ppsf_svg.append("g")
+                    .attr("id", "x-axis")
+                    .attr("transform", "translate(0," + (map_height - 1.5 * margin.bottom) + ")")
+                x_axis.call(d3.axisBottom(xScale).tickFormat(d => d.toString()));
+
+                var y_axis = ppsf_svg.append("g")
+                    .attr("id", "y-axis")
+                    .attr("transform", "translate(" + (margin.left * 2) + ", 0)")
+                    .style("stroke-width", "1px");
+                y_axis.call(d3.axisLeft(yScale).tickFormat(d => "$" + (d / 1000) + "k")
+                    .tickSizeInner(-(map_width - margin.left * 4)));
+                y_axis.select(".domain").remove();
+                y_axis.selectAll(".tick line")
+                    .classed("tick-line", (d, i) => i !== 0);
 
                 ppsf_graph.append("path")
                     .datum(predicted)
@@ -176,61 +203,136 @@
                     .attr("class", "linePredict")
                     .attr("d", line);
 
+                ppsf_graph.append("path")
+                    .datum(data)
+                    .attr("fill", "none")
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 2)
+                    .attr("class", "lineExist")
+                    .attr("d", line);
+
                 ppsf_svg.append("text")
                     .attr("id", "ppsf_title1")
-                    .attr("x", map_width / 2 - 145)
-                    .attr("y", margin.top)
-                    .attr("text-anchor", "middle")
-                    .attr("class", "solidUnder")
+                    .attr("x", margin.left + 17)
+                    .attr("y", margin.top + 12)
+                    .attr("text-anchor", "left")
+                    .style("font-size", 12)
+                    .style("fill", "grey")
+                    .text("Prediction model");
+
+                ppsf_svg.append("text")
+                    .attr("id", "ppsf_title1")
+                    .attr("x", margin.left + 17)
+                    .attr("y", margin.top + 30)
+                    .attr("text-anchor", "left")
                     .style("font-size", 20)
+                    .text("Housing price");
+
+                ppsf_svg.append("line")
+                    .attr("x1", map_width - 2 * margin.right - 64)
+                    .attr("y1", margin.top * 1.4)
+                    .attr("x2", map_width - 2 * margin.right - 50)
+                    .attr("y2", margin.top * 1.4)
+                    .style("stroke", "black");
+
+                ppsf_svg.append("text")
+                    .attr("id", "past_legend")
+                    .attr("x", map_width - 2 * margin.right - 44)
+                    .attr("y", margin.top * 1.4 + 3)
+                    .attr("text-anchor", "left")
+                    .style("font-size", 12)
                     .text("Past");
 
                 ppsf_svg.append("line")
-                    .attr("id", "underline")
-                    .attr("x1", "154")
-                    .attr("y1", "42")
-                    .attr("x2", "232")
-                    .attr("y2", "42")
-                    .attr("class", "underline");
+                    .attr("x1", map_width - 2 * margin.right - 64)
+                    .attr("y1", margin.top * 1.7)
+                    .attr("x2", map_width - 2 * margin.right - 50)
+                    .attr("y2", margin.top * 1.7)
+                    .style("stroke", "black")
+                    .style("stroke-dasharray", "2, 2");
 
                 ppsf_svg.append("text")
-                    .attr("id", "ppsf_title1")
-                    .attr("x", map_width / 2 + 30)
-                    .attr("y", margin.top)
-                    .attr("text-anchor", "middle")
-                    .style("font-size", 20)
-                    .text(" and Predicted PPSF of " + state);
+                    .attr("id", "past_legend")
+                    .attr("x", map_width - 2 * margin.right - 44)
+                    .attr("y", margin.top * 1.7 + 3)
+                    .attr("text-anchor", "left")
+                    .style("font-size", 12)
+                    .text("Predicted");
 
-                var x_axis = ppsf_svg.append("g")
-                    .attr("id", "x-axis")
-                    .attr("transform", "translate(0," + (map_height - margin.bottom) + ")")
-                x_axis.call(d3.axisBottom(xScale));
-                ppsf_svg.append("text")
-                    .attr("id", "x-label")
-                    .attr("x", map_width / 2)
-                    .attr("y", map_height - margin.bottom / 4)
-                    .attr("text-anchor", "middle")
-                    .style("fill", "black")
-                    .style("font-size", 14)
-                    .text("Year");
+                ppsf_svg.selectAll("buffer-circle")
+                    .data(data)
+                    .enter().append("circle")
+                    .attr("cx", d => xScale(d.x))
+                    .attr("cy", d => yScale(d.y))
+                    .attr("r", 3.5)
+                    .attr("fill", "white");
 
-                var y_axis = ppsf_svg.append("g")
-                    .attr("id", "y-axis")
-                    .attr("transform", "translate(" + (margin.left) + ", " + (- margin.bottom) + ")")
-                    .style("stroke-width", "1px");
-                y_axis.call(d3.axisLeft(yScale).tickFormat(d => (d / 1000)));
-                ppsf_svg.append("text")
-                    .attr("id", "y-label")
-                    .attr("transform", "rotate(-90)")
-                    .attr("x", - map_height / 2)
-                    .attr("y", 0)
-                    .attr("dy", "1em")
-                    .attr("text-anchor", "middle")
-                    .style("fill", "black")
-                    .style("font-size", 14)
-                    .text("Avg. Price/Square Foot (k)");
+                ppsf_svg.selectAll("data-circle")
+                    .data(data)
+                    .enter().append("circle")
+                    .attr("cx", d => xScale(d.x))
+                    .attr("cy", d => yScale(d.y))
+                    .attr("r", 2.5)
+                    .attr("fill", "black")
+                    .on("mouseover", function (d) {
+                        console.log(d);
+                        circleMouseOver(d);
+                    })
+                    .on("mouseout", function (d) {
+                        circleMouseOut(d);
+                    });
+
+                ppsf_svg.selectAll("buffer-circle")
+                    .data(predicted)
+                    .enter().append("circle")
+                    .attr("cx", d => xScale(d.x))
+                    .attr("cy", d => yScale(d.y))
+                    .attr("r", 3.5)
+                    .attr("fill", "white");
+
+                ppsf_svg.selectAll("data-circle")
+                    .data(predicted)
+                    .enter().append("circle")
+                    .attr("cx", d => xScale(d.x))
+                    .attr("cy", d => yScale(d.y))
+                    .attr("r", 2.5)
+                    .attr("fill", "black")
+                    .on("mouseover", function (d) {
+                        console.log(d);
+                        circleMouseOver(d);
+                    })
+                    .on("mouseout", function (d) {
+                        circleMouseOut(d);
+                    });
+
+                function circleMouseOver(d) {
+                    var tooltip = d3.select("#graphContainer").append("div")
+                        .attr("id", "tooltip")
+                        .attr("class", "tooltip");
+                    tooltip.transition()
+                        .transition(200)
+                        .style("opacity", 0.9);
+                    tooltip.html(
+                        "Year: " + d.x + "<br/>"
+                        + "Avg Price/ft²: $" + d.y
+                    )
+                        .style("left", (d3.event.pageX - 75) + "px")
+                        .style("top", (d3.event.pageY - 55) + "px");
+                }
+                function circleMouseOut(d) {
+                    tooltip = document.getElementById("tooltip");
+                    if (tooltip !== null) {
+                        tooltip.parentNode.removeChild(tooltip);
+                    }
+                }
             }
 
+            function deleteGraphs(state) {
+                state_ppsf_element = document.getElementById("ppsf_graph_svg");
+                if (state_ppsf_element !== null) {
+                    state_ppsf_element.parentNode.removeChild(state_ppsf_element);
+                }
+            }
         }).catch(function (error) {
             console.log(error);
         });
