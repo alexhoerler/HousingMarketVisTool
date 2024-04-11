@@ -152,6 +152,9 @@
                     let ele = document.createElement("img")
                     ele.id = "img"
                     ele.src = "bar_chart/" + stateToAbbr(d.properties.name) + ".png"
+                    ele.onerror = function(){
+                        deleteGraphs();
+                    }
                     document.getElementById('graphContainer').appendChild(ele)
                     console.log(stateToAbbr(d.properties.name))
                 });
