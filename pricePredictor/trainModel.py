@@ -24,10 +24,10 @@ def trainTest(model, criterion, optimizer, train_loader, test_loader):
         data = train_batch[0][0]
         targets = train_batch[1][0]
 
-        inputs = data[:, 0:1]
-        added_features = data[:, 1:]
+        inputs = data[:, 0:2]
+        added_features = data[:, 2:]
 
-        for iteration in range(7, inputs.shape[0] - 1):
+        for iteration in range(inputs.shape[0] - 1):
             iteration_input = inputs[:iteration + 1, :]
             iteration_features = added_features[:iteration + 1, :]
             iteration_target = targets[iteration].unsqueeze(0) + 10
@@ -56,8 +56,8 @@ def trainTest(model, criterion, optimizer, train_loader, test_loader):
         data = test_batch[0][0]
         targets = test_batch[1][0]
 
-        inputs = data[:, 0:1]
-        added_features = data[:, 1:]
+        inputs = data[:, 0:2]
+        added_features = data[:, 2:]
 
         target = targets[-2].unsqueeze(0) + 10
         hidden_state = torch.tensor([[0.0] * model.d_model])
@@ -85,9 +85,9 @@ if __name__ == "__main__":
     train_data_loader, eval_data_loader = createDataloader()
 
     model = PricePredictor()
-    if os.path.exists("predictor.pth"):
-        print("Loading model from file")
-        model.load_state_dict(torch.load("predictor_original.pth"))
+    # if os.path.exists("predictor.pth"):
+    #     print("Loading model from file")
+    #     model.load_state_dict(torch.load("predictor_original.pth"))
 
     criterion = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
@@ -96,7 +96,7 @@ if __name__ == "__main__":
         print("Epoch: ", epoch)
         avg_train_loss, avg_test_loss = trainTest(model, criterion, optimizer,
                                                   train_data_loader, eval_data_loader)
-        if avg_train_loss < 2000 and avg_test_loss < 50:
+        if avg_train_loss < 4000 and avg_test_loss < 200:
             print("Local minima found; Breaking")
             break
     torch.save(model.state_dict(), "predictor.pth")

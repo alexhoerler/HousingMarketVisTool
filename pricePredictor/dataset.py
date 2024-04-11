@@ -9,6 +9,8 @@ class PricePredictorDataset(Dataset):
     def __init__(self, data_file):
         self.housing_types = ["Single Family Residential", "Townhouse",
                               "Condo/Co-op", "All Residential", "Multi-Family (2-4 Unit)"]
+        self.interest_rates = {2013: 0.14, 2014: 0.07, 2015: 0.11, 2016: 0.34, 2017: 0.65,
+                               2018: 1.41, 2019: 2.40, 2020: 1.55, 2021: 0.09, 2022: 0.08, 2023: 4.33, 2024: 5.33}
         self.data_points = dict()
         with open(data_file, "r") as file:
             csv_reader = csv.reader(file)
@@ -78,6 +80,7 @@ class PricePredictorDataset(Dataset):
                 state_year_dict = self.data_points[state][year]
                 avg_median_ppsf = state_year_dict.get("avg_median_ppsf", [0.0])
                 avg_median_ppsf = sum(avg_median_ppsf) / len(avg_median_ppsf)
+                interest_rate = self.interest_rates[year + 1]
                 avg_median_list_ppsf = state_year_dict.get(
                     "avg_median_list_ppsf", [0.0])
                 avg_median_list_ppsf = sum(
@@ -102,7 +105,7 @@ class PricePredictorDataset(Dataset):
                 all_res = state_year_dict.get("All Residential", 0)
                 multi_fam = state_year_dict.get("Multi-Family (2-4 Unit)", 0)
 
-                year_tensor = torch.tensor([[avg_median_ppsf, avg_median_list_ppsf, avg_median_sale_price, avg_homes_sold,
+                year_tensor = torch.tensor([[avg_median_ppsf, interest_rate, avg_median_list_ppsf, avg_median_sale_price, avg_homes_sold,
                                            total_homes_sold, avg_new_listings, avg_median_dom, single_fam_res, townhouse, condo, all_res, multi_fam]])
                 if state_data_tensor is None:
                     state_data_tensor = year_tensor

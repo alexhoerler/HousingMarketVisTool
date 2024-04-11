@@ -12,7 +12,7 @@ class PricePredictor(nn.Module):
 
         self.dropout = nn.Dropout()
         self.in_linear = nn.Linear(self.d_model + 11, self.d_model)
-        self.gru = nn.GRU(1, self.d_model)
+        self.gru = nn.GRU(2, self.d_model)
         self.out_linear = nn.Linear(self.d_model, 1)
 
     def forward(self, x, hidden_state, added_features):
