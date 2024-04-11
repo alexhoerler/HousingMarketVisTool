@@ -27,10 +27,10 @@ def trainTest(model, criterion, optimizer, train_loader, test_loader):
         inputs = data[:, 0:1]
         added_features = data[:, 1:]
 
-        for iteration in range(inputs.shape[0] - 1):
+        for iteration in range(7, inputs.shape[0] - 1):
             iteration_input = inputs[:iteration + 1, :]
             iteration_features = added_features[:iteration + 1, :]
-            iteration_target = targets[iteration].unsqueeze(0) + 3
+            iteration_target = targets[iteration].unsqueeze(0) + 10
 
             optimizer.zero_grad()
             hidden_state = torch.tensor([[0.0] * model.d_model])
@@ -48,7 +48,7 @@ def trainTest(model, criterion, optimizer, train_loader, test_loader):
             loss.backward()
             optimizer.step()
 
-    avg_train_loss = int(train_loss / (len(train_loader) * 9))
+    avg_train_loss = int(train_loss / (len(train_loader) * 3))
     print("Average train loss: ", avg_train_loss)
 
     test_loss = 0
@@ -59,7 +59,7 @@ def trainTest(model, criterion, optimizer, train_loader, test_loader):
         inputs = data[:, 0:1]
         added_features = data[:, 1:]
 
-        target = targets[-2].unsqueeze(0) + 3
+        target = targets[-2].unsqueeze(0) + 10
         hidden_state = torch.tensor([[0.0] * model.d_model])
         prediction = None
         for row in range(inputs.shape[0] - 1):
@@ -82,24 +82,24 @@ def trainTest(model, criterion, optimizer, train_loader, test_loader):
 
 
 if __name__ == "__main__":
-    # train_data_loader, eval_data_loader = createDataloader()
+    train_data_loader, eval_data_loader = createDataloader()
 
-    # model = PricePredictor()
-    # if os.path.exists("predictor_original.pth"):
-    #     print("Loading model from file")
-    #     model.load_state_dict(torch.load("predictor_original.pth"))
+    model = PricePredictor()
+    if os.path.exists("predictor.pth"):
+        print("Loading model from file")
+        model.load_state_dict(torch.load("predictor_original.pth"))
 
-    # criterion = torch.nn.MSELoss()
-    # optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
-    # epochs = 5000
-    # for epoch in range(epochs):
-    #     print("Epoch: ", epoch)
-    #     avg_train_loss, avg_test_loss = trainTest(model, criterion, optimizer,
-    #                                               train_data_loader, eval_data_loader)
-    #     if avg_train_loss < 4000 and avg_test_loss < 50:
-    #         print("Local minima found; Breaking")
-    #         break
-    # torch.save(model.state_dict(), "predictor_avg.pth")
+    criterion = torch.nn.MSELoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
+    epochs = 5000
+    for epoch in range(epochs):
+        print("Epoch: ", epoch)
+        avg_train_loss, avg_test_loss = trainTest(model, criterion, optimizer,
+                                                  train_data_loader, eval_data_loader)
+        if avg_train_loss < 2000 and avg_test_loss < 50:
+            print("Local minima found; Breaking")
+            break
+    torch.save(model.state_dict(), "predictor.pth")
 
-    house_dataset = PricePredictorDataset("../data/data.csv")
-    house_dataset.state_ppsf_stats("predictor_avg.pth")
+    # house_dataset = PricePredictorDataset("../data/data.csv")
+    # house_dataset.state_ppsf_stats("predictor_avg.pth")

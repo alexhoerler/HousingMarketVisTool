@@ -64,7 +64,7 @@
             position: absolute;
             z-index: 9999;
             text-align: center;
-            width: 140px;
+            width: 150px;
             height: 40px;
             padding: 5px;
             font: 5;
@@ -200,7 +200,7 @@
                     .attr("id", "y-axis")
                     .attr("transform", "translate(" + (margin.left * 2) + ", 0)")
                     .style("stroke-width", "1px");
-                y_axis.call(d3.axisLeft(yScale).tickFormat(d => "$" + (d / 1000) + "k")
+                y_axis.call(d3.axisLeft(yScale).tickFormat(d => "$" + d)
                     .tickSizeInner(-(map_width - margin.left * 4)));
                 y_axis.select(".domain").remove();
                 y_axis.selectAll(".tick line")
@@ -324,7 +324,7 @@
                         .style("opacity", 0.9);
                     tooltip.html(
                         "Year: " + d.x + "<br/>"
-                        + "Avg Price/ft²: $" + d.y
+                        + "Avg Price/ft²: $" + d.y.toFixed(2)
                     )
                         .style("left", (d3.event.pageX - 75) + "px")
                         .style("top", (d3.event.pageY - 55) + "px");
