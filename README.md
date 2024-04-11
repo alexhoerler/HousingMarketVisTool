@@ -4,7 +4,7 @@ Within the dynamic landscape of housing investments, where strategic decisions c
 # Installation / Set Up
 1. Clone the HousingMarketVisTool Repository
 ```
-$ git clone [Repository URL]
+$ git clone https://github.com/alexhoerler/HousingMarketVisTool.git
 ```
 2. Open the Project in VSCode
 3. Ensure that Python 3.x is installed on your system
