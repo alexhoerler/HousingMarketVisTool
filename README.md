@@ -13,7 +13,7 @@ $ python3 --version
 ```
 4. Run the HTTP Server in the project directory
 ```
-$ python -m http.server 8000
+$ python3 -m http.server 8000
 ```
 5. Click on the generated link to connect to the server running on port 8000
 6. Interact with the HousingMarketVisTool
