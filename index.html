@@ -71,6 +71,12 @@
             pointer-events: none;
             opacity: 0;
         }
+
+        #tableContainer {
+            background-color: white;
+            border: 1px solid #ccc;
+            margin-left: 20px;
+        }
     </style>
 </head>
 
@@ -332,6 +338,55 @@
                 if (state_ppsf_element !== null) {
                     state_ppsf_element.parentNode.removeChild(state_ppsf_element);
                 }
+            }
+
+            /* Create top 10 highest ppsf table */
+            function createPpsfTable() {
+                let avg_ppsf = {};
+                let avg_ppsf2 = {};
+                state_ppsf.forEach(function (state_data) {
+                    let sum = 0;
+                    let count = 0;
+                    for (let year in state_data) {
+                        if (year !== 'state' && year !== '2022' && year !== '2023' && year !== '2024') {
+                            sum += parseFloat(state_data[year]);
+                            count++;
+                        }
+                    }
+                    avg_ppsf[state_data.state] = sum / count;
+                    console.log(sum / count);
+                    avg_ppsf2[state_data.state] = sum / count;
+                });
+
+                // sort states
+                let sortedStates = Object.keys(avg_ppsf).sort(function (a, b) {
+                    return avg_ppsf[b] - avg_ppsf[a];
+                });
+
+                console.log(avg_ppsf2);
+
+                let container = d3.select("#graphContainer");
+                let table = container.append("table")
+                    .attr("id", "tableContainer");
+
+                let thead = table.append("thead");
+                let titleRow = thead.append("tr");
+                titleRow.append("th")
+                    .attr("colspan", "3")
+                    .text("Top 10 States by AVG House PPSF");
+                let headerRow = thead.append("tr");
+                thead.append("th").text("Rank");
+                thead.append("th").text("State");
+                thead.append("th").text("Avg House PPSF");
+                let tbody = table.append("tbody");
+
+                sortedStates.slice(0, 10).forEach(function (state, index) {
+                    let row = tbody.append("tr");
+                    row.append("td").text(index + 1); // rank
+                    row.append("td").text(state);
+                    row.append("td").text(avg_ppsf2[state].toFixed(2)); //ppsf
+                });
+
             }
         }).catch(function (error) {
             console.log(error);
