@@ -19,4 +19,4 @@ $ python3 -m http.server 8000
 6. Interact with the HousingMarketVisTool
 
 # Execution
-Once you...
+![Example Image](images/initial_page.png)
