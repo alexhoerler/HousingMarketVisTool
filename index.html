@@ -18,6 +18,7 @@
             background-color: #ffffff;
             color: #000000;
             padding: 25px;
+            box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.1);
         }
 
         .header h1 {
@@ -50,6 +51,8 @@
             background-color: #ffffff;
             margin: 0;
             padding: 0;
+            border-radius: 5px;
+            box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.1);
         }
 
         .tick-line {
@@ -74,8 +77,10 @@
 
         #tableContainer {
             background-color: white;
-            border: 1px solid #ccc;
+            border: 0px;
+            border-radius: 5px;
             margin-left: 20px;
+            box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -109,7 +114,7 @@
             var generalData = state_data_files[0]
             var state_ppsf = state_data_files[1]
             var usStates = state_data_files[2];
-            console.log(state_ppsf)
+            console.log(state_ppsf);
             console.log(usStates);
 
             const scaleFunction = d3.geoTransform({
@@ -130,9 +135,10 @@
                 .attr("d", path)
                 .attr("class", "mapPath")
                 .on("click", function (d) {
-                    deleteGraphs(d.properties.name);
+                    deleteGraphs();
                     setHeader(d.properties.name);
                     createPpsfLine(d.properties.name);
+                    createPpsfTable(state_ppsf);
                 });
 
             /* Sets the Header Value */
@@ -281,7 +287,6 @@
                     .attr("r", 2.5)
                     .attr("fill", "black")
                     .on("mouseover", function (d) {
-                        console.log(d);
                         circleMouseOver(d);
                     })
                     .on("mouseout", function (d) {
@@ -304,7 +309,6 @@
                     .attr("r", 2.5)
                     .attr("fill", "black")
                     .on("mouseover", function (d) {
-                        console.log(d);
                         circleMouseOver(d);
                     })
                     .on("mouseout", function (d) {
@@ -333,15 +337,8 @@
                 }
             }
 
-            function deleteGraphs(state) {
-                state_ppsf_element = document.getElementById("ppsf_graph_svg");
-                if (state_ppsf_element !== null) {
-                    state_ppsf_element.parentNode.removeChild(state_ppsf_element);
-                }
-            }
-
             /* Create top 10 highest ppsf table */
-            function createPpsfTable() {
+            function createPpsfTable(state_ppsf) {
                 let avg_ppsf = {};
                 let avg_ppsf2 = {};
                 state_ppsf.forEach(function (state_data) {
@@ -354,7 +351,7 @@
                         }
                     }
                     avg_ppsf[state_data.state] = sum / count;
-                    console.log(sum / count);
+                    // console.log(sum / count);
                     avg_ppsf2[state_data.state] = sum / count;
                 });
 
@@ -363,7 +360,7 @@
                     return avg_ppsf[b] - avg_ppsf[a];
                 });
 
-                console.log(avg_ppsf2);
+                // console.log(avg_ppsf2);
 
                 let container = d3.select("#graphContainer");
                 let table = container.append("table")
@@ -386,7 +383,17 @@
                     row.append("td").text(state);
                     row.append("td").text(avg_ppsf2[state].toFixed(2)); //ppsf
                 });
+            }
 
+            function deleteGraphs() {
+                state_ppsf_element = document.getElementById("ppsf_graph_svg");
+                if (state_ppsf_element !== null) {
+                    state_ppsf_element.parentNode.removeChild(state_ppsf_element);
+                }
+                state_table_element = document.getElementById("tableContainer");
+                if (state_table_element !== null) {
+                    state_table_element.parentNode.removeChild(state_table_element);
+                }
             }
         }).catch(function (error) {
             console.log(error);
