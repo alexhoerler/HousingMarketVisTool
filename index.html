@@ -57,7 +57,7 @@
 
         .tick-line {
             stroke: lightgrey;
-            stroke-dasharray: 3, 3;
+            stroke-dasharray: 1, 1;
         }
 
         div.tooltip {
@@ -270,6 +270,26 @@
                     .attr("text-anchor", "left")
                     .style("font-size", 12)
                     .text("Predicted");
+                
+                ppsf_svg.append("text")
+                    .attr("id", "y-label")
+                    .attr("transform", "rotate(-90)")
+                    .attr("x", - map_height * 0.55)
+                    .attr("y", margin.left * 0.75)
+                    .attr("dy", "1em")
+                    .attr("text-anchor", "middle")
+                    .style("fill", "black")
+                    .style("font-size", 12)
+                    .text("Avg Price/ft²");
+                
+                ppsf_svg.append("text")
+                    .attr("id", "x-label")
+                    .attr("x", map_width / 2)
+                    .attr("y", map_height - margin.bottom * 0.6)
+                    .attr("text-anchor", "middle")
+                    .style("fill", "black")
+                    .style("font-size", 12)
+                    .text("Year");
 
                 ppsf_svg.selectAll("buffer-circle")
                     .data(data)
