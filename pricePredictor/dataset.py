@@ -77,21 +77,24 @@ class PricePredictorDataset(Dataset):
             for year in years:
                 state_year_dict = self.data_points[state][year]
                 avg_median_ppsf = state_year_dict.get("avg_median_ppsf", [0.0])
-                avg_median_ppsf = sum(avg_median_ppsf)
+                avg_median_ppsf = sum(avg_median_ppsf) / len(avg_median_ppsf)
                 avg_median_list_ppsf = state_year_dict.get(
                     "avg_median_list_ppsf", [0.0])
-                avg_median_list_ppsf = sum(avg_median_list_ppsf)
+                avg_median_list_ppsf = sum(
+                    avg_median_list_ppsf) / len(avg_median_list_ppsf)
                 avg_median_sale_price = state_year_dict.get(
                     "avg_median_sale_price", [0.0])
-                avg_median_sale_price = sum(avg_median_sale_price)
+                avg_median_sale_price = sum(
+                    avg_median_sale_price) / len(avg_median_sale_price)
                 avg_homes_sold = state_year_dict.get("avg_homes_sold", [0.0])
-                avg_homes_sold = sum(avg_homes_sold)
+                avg_homes_sold = sum(avg_homes_sold) / len(avg_homes_sold)
                 total_homes_sold = state_year_dict.get("total_homes_sold", 0)
                 avg_new_listings = state_year_dict.get(
                     "avg_new_listings", [0.0])
-                avg_new_listings = sum(avg_new_listings)
+                avg_new_listings = sum(avg_new_listings) / \
+                    len(avg_new_listings)
                 avg_median_dom = state_year_dict.get("avg_median_dom", [0.0])
-                avg_median_dom = sum(avg_median_dom)
+                avg_median_dom = sum(avg_median_dom) / len(avg_median_dom)
                 single_fam_res = state_year_dict.get(
                     "Single Family Residential", 0)
                 townhouse = state_year_dict.get("Townhouse", 0)
@@ -111,7 +114,7 @@ class PricePredictorDataset(Dataset):
                 if next_year_dict is not None:
                     next_avg_ppsf = next_year_dict.get(
                         "avg_median_ppsf", [0.0])
-                    next_avg_ppsf = sum(next_avg_ppsf)
+                    next_avg_ppsf = sum(next_avg_ppsf) / len(next_avg_ppsf)
                     target_tensor = torch.tensor([next_avg_ppsf])
                 else:
                     target_tensor = torch.tensor([0.0])

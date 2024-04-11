@@ -30,7 +30,7 @@ def trainTest(model, criterion, optimizer, train_loader, test_loader):
         for iteration in range(inputs.shape[0] - 1):
             iteration_input = inputs[:iteration + 1, :]
             iteration_features = added_features[:iteration + 1, :]
-            iteration_target = targets[iteration].unsqueeze(0) + 1000
+            iteration_target = targets[iteration].unsqueeze(0) + 3
 
             optimizer.zero_grad()
             hidden_state = torch.tensor([[0.0] * model.d_model])
@@ -59,7 +59,7 @@ def trainTest(model, criterion, optimizer, train_loader, test_loader):
         inputs = data[:, 0:1]
         added_features = data[:, 1:]
 
-        target = targets[-2].unsqueeze(0)
+        target = targets[-2].unsqueeze(0) + 3
         hidden_state = torch.tensor([[0.0] * model.d_model])
         prediction = None
         for row in range(inputs.shape[0] - 1):
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     #     print("Epoch: ", epoch)
     #     avg_train_loss, avg_test_loss = trainTest(model, criterion, optimizer,
     #                                               train_data_loader, eval_data_loader)
-    #     if avg_train_loss < 5500000 and avg_test_loss < 3000000:
+    #     if avg_train_loss < 4000 and avg_test_loss < 50:
     #         print("Local minima found; Breaking")
     #         break
     # torch.save(model.state_dict(), "predictor_avg.pth")
