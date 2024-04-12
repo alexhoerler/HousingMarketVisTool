@@ -156,8 +156,8 @@ class PricePredictorDataset(Dataset):
                 csv_row = [state]
                 data, targets = self.__getitem__(idx)
 
-                inputs = data[:, 0:1]
-                added_features = data[:, 1:]
+                inputs = data[:, 0:2]
+                added_features = data[:, 2:]
                 hidden_state = torch.tensor([[0.0] * model.d_model])
                 prediction = None
                 for row in range(inputs.shape[0]):
@@ -173,7 +173,8 @@ class PricePredictorDataset(Dataset):
 
                 csv_row.append(float(int(prediction[0].item())))
                 for row in range(predicted_num - 1):
-                    current_input = prediction.unsqueeze(0)
+                    current_input = torch.tensor(
+                        [prediction[0].item(), self.interest_rates[2022 + row]]).unsqueeze(0)
                     start_idx = max(inputs.shape[0] + row - 4, 0)
                     end_idx = min(inputs.shape[0] +
                                   row + 1, added_features.shape[0])

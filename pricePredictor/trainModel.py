@@ -85,18 +85,18 @@ if __name__ == "__main__":
     train_data_loader, eval_data_loader = createDataloader()
 
     model = PricePredictor()
-    # if os.path.exists("predictor.pth"):
-    #     print("Loading model from file")
-    #     model.load_state_dict(torch.load("predictor_original.pth"))
+    if os.path.exists("predictor.pth"):
+        print("Loading model from file")
+        model.load_state_dict(torch.load("predictor.pth"))
 
     criterion = torch.nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.000001)
     epochs = 5000
     for epoch in range(epochs):
         print("Epoch: ", epoch)
         avg_train_loss, avg_test_loss = trainTest(model, criterion, optimizer,
                                                   train_data_loader, eval_data_loader)
-        if avg_train_loss < 4000 and avg_test_loss < 200:
+        if avg_train_loss < 6000 and avg_test_loss < 100:
             print("Local minima found; Breaking")
             break
     torch.save(model.state_dict(), "predictor.pth")
