@@ -26,18 +26,21 @@
             font-size: 24px;
         }
 
+        .header h3 {
+            margin: 0;
+            font-size: 20px;
+        }
+
         body>*:not(.header) {
             margin: 25px;
         }
 
         .mapPath {
-            fill: #ccc;
-            stroke: #ffffff;
-            stroke-width: 1px;
+            stroke: #000000;
+            stroke-width: 0.25px;
         }
 
         path {
-            fill: #ffffff;
             stroke: #000000;
             stroke-width: 1px;
         }
@@ -101,6 +104,7 @@
 <body>
     <div class="header" id="header">
         <h1>The Housing Market Across the States</h1>
+        <h3></h3>
     </div>
     <div class="mapContainer" id="mapContainer">
     </div>
@@ -130,14 +134,36 @@
             console.log(state_ppsf);
             console.log(usStates);
 
+            const minValue = state_ppsf.reduce((min, obj) => {
+                const value = +obj[2021];
+                if (min === null || value < min) {
+                    return value;
+                } else {
+                    return min;
+                }
+            }, null);
+            const maxValue = state_ppsf.reduce((max, obj) => {
+                const value = +obj[2021];
+                if (max === null || value > max) {
+                    return value;
+                } else {
+                    return max;
+                }
+            }, null);
+            const colorScale = d3.scaleSequential(d3.interpolateGreens)
+                .domain([minValue, maxValue]);
+
             const scaleFunction = d3.geoTransform({
                 point: function (x, y) {
                     this.stream.point(x / 2, y / 2);
                 }
             });
-
-            // Define a path generator with scaled projection
             const path = d3.geoPath().projection(scaleFunction);
+
+            const header = document.getElementById("header");
+            const h3Element = header.querySelector("h3");
+            h3Element.innerText = "State";
+            h3Element.style.color = "white";
 
             const state = svg.append("g")
                 .attr("stroke", "#444")
@@ -147,6 +173,15 @@
                 .enter().append("path")
                 .attr("d", path)
                 .attr("class", "mapPath")
+                .attr("fill", d => {
+                    let ppsf_value = null;
+                    state_ppsf.forEach(function (state_obj) {
+                        if (state_obj.state == d.properties.name) {
+                            ppsf_value = state_obj[2021]
+                        }
+                    });
+                    return ppsf_value ? colorScale(ppsf_value) : "white";
+                })
                 .on("click", function (d) {
                     deleteGraphs();
                     setHeader(d.properties.name);
@@ -166,8 +201,9 @@
             /* Sets the Header Value */
             function setHeader(state) {
                 const header = document.getElementById("header");
-                const h1Element = header.querySelector("h1");
-                h1Element.innerText = state;
+                const h3Element = header.querySelector("h3");
+                h3Element.innerText = state;
+                h3Element.style.color = "grey";
             }
 
             /* Create ppsf Line */
