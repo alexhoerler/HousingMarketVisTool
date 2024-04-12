@@ -19,4 +19,12 @@ $ python3 -m http.server 8000
 6. Interact with the HousingMarketVisTool
 
 # Execution
+The website will appear as follows upon opening:
 ![Example Image](images/initial_page.png)
+## Interactive Feature 1
+Users can click on different states to visualize housing market data.
+![Example Image](images/GA.png)
+![Example Image](images/NC.png)
+## Interactive Feature 2
+The line graph employs predictive ML (machine learning) algorithms to forecast housing prices. Users can hover over the data points to view detailed price information.
+![Example Image](images/line-graph.png)
